@@ -5,6 +5,7 @@ WORKDIR /app
 COPY . .
 RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com .
 
-EXPOSE 8001
+ENV AGENT_PORT=8002
+EXPOSE ${AGENT_PORT}
 
-CMD ["uvicorn", "agent_stock.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["sh", "-c", "uvicorn agent_stock.main:app --host 0.0.0.0 --port ${AGENT_PORT}"]
