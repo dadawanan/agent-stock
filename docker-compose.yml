@@ -1,0 +1,15 @@
+services:
+  agent-stock:
+    build: .
+    container_name: agent-stock
+    restart: always
+    ports:
+      - "9002:9002"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      STOCK_API_URL: ${STOCK_API_URL:-http://host.docker.internal:8000}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      AGENT_PORT: 9002
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
