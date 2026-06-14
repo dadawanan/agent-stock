@@ -5,7 +5,7 @@ import logging
 
 from agent_stock.config import settings
 from agent_stock.tools.news_tools import _validate_stock_code
-from agent_stock.tools.stock_tools import get_http_client
+from agent_stock.tools.stock_tools import get_http_client, _auth_headers
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ async def get_strategies() -> str:
     """获取所有量化策略列表。返回策略的JSON数据，包含策略ID、名称、参数等。"""
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/quant/strategies")
+        resp = await client.get(f"{settings.stock_api_url}/api/quant/strategies", headers=_auth_headers())
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:
@@ -26,7 +26,7 @@ async def get_backtest_results() -> str:
     """获取回测结果列表。返回所有回测记录的JSON数据。"""
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/quant/backtest/results")
+        resp = await client.get(f"{settings.stock_api_url}/api/quant/backtest/results", headers=_auth_headers())
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:
@@ -43,6 +43,7 @@ async def get_stock_price(stock_code: str) -> str:
         resp = await client.get(
             f"{settings.stock_api_url}/api/quant/market/prices",
             params={"codes": stock_code},
+            headers=_auth_headers(),
         )
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)

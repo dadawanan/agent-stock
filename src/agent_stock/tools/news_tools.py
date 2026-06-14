@@ -5,7 +5,7 @@ import logging
 import re
 
 from agent_stock.config import settings
-from agent_stock.tools.stock_tools import get_http_client
+from agent_stock.tools.stock_tools import get_http_client, _auth_headers
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ async def get_stock_news(stock_code: str) -> str:
         return json.dumps({"error": err}, ensure_ascii=False)
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/news/{stock_code}")
+        resp = await client.get(f"{settings.stock_api_url}/api/news/{stock_code}", headers=_auth_headers())
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:
@@ -39,7 +39,7 @@ async def get_stock_analysis(stock_code: str) -> str:
         return json.dumps({"error": err}, ensure_ascii=False)
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/analysis/{stock_code}")
+        resp = await client.get(f"{settings.stock_api_url}/api/analysis/{stock_code}", headers=_auth_headers())
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:
