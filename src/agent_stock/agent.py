@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
+from agent_stock.config import settings
 from agent_stock.tools.stock_tools import get_popular_stocks, get_stock_list
 from agent_stock.tools.account_tools import get_sim_accounts, get_account_positions, get_account_orders
 from agent_stock.tools.news_tools import get_stock_news, get_stock_analysis
@@ -25,8 +28,17 @@ SYSTEM_PROMPT = """你是A股智能助手，一位专业的金融分析师。
 
 你可以调用工具获取实时数据。当用户问到具体股票时，优先调用工具获取最新数据再回答。"""
 
+# Create OpenAI provider with custom base URL (proxy gateway)
+openai_provider = OpenAIProvider(
+    base_url=settings.openai_base_url,
+    api_key=settings.openai_api_key,
+)
+
+# Create model with custom provider
+openai_model = OpenAIChatModel("gpt-4o", provider=openai_provider)
+
 stock_agent = Agent(
-    "openai:gpt-4o",
+    openai_model,
     system_prompt=SYSTEM_PROMPT,
     retries=2,
 )

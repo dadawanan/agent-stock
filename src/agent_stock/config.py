@@ -41,6 +41,10 @@ class Settings:
         return self._get("openai_api_key", _load)  # type: ignore[return-value]
 
     @property
+    def openai_base_url(self) -> str:
+        return self._get("openai_base_url", lambda: os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"))  # type: ignore[return-value]
+
+    @property
     def stock_api_url(self) -> str:
         return self._get("stock_api_url", lambda: os.environ.get("STOCK_API_URL", "http://localhost:8000"))  # type: ignore[return-value]
 
