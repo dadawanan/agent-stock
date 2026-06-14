@@ -33,7 +33,12 @@ class Settings:
 
     @property
     def openai_api_key(self) -> str:
-        return self._get("openai_api_key", lambda: os.environ.get("OPENAI_API_KEY", ""))  # type: ignore[return-value]
+        def _load() -> str:
+            key = os.environ.get("OPENAI_API_KEY", "")
+            if not key:
+                raise RuntimeError("缺少环境变量: OPENAI_API_KEY")
+            return key
+        return self._get("openai_api_key", _load)  # type: ignore[return-value]
 
     @property
     def stock_api_url(self) -> str:

@@ -4,7 +4,6 @@ import json
 import logging
 
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
 from agent_stock.agent import stock_agent
@@ -14,14 +13,6 @@ from agent_stock.schemas import ChatRequest, ChatHistoryMessage
 logger = logging.getLogger("agent-stock")
 
 app = FastAPI(title="Agent Stock API", version="0.1.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 def _build_message_history(history: list[ChatHistoryMessage]) -> list[dict[str, str]]:
@@ -48,11 +39,11 @@ async def _stream_chat(request: ChatRequest):
                 "event": "message",
                 "data": json.dumps({"type": "done"}, ensure_ascii=False),
             }
-    except Exception as e:
+    except Exception:
         logger.exception("Chat stream error")
         yield {
             "event": "message",
-            "data": json.dumps({"type": "error", "content": str(e)}, ensure_ascii=False),
+            "data": json.dumps({"type": "error", "content": "AI 服务处理出错，请稍后重试"}, ensure_ascii=False),
         }
 
 
