@@ -22,7 +22,7 @@ def _get_service_token() -> str:
     from agent_stock.config import settings
     expire = datetime.now(timezone.utc) + timedelta(hours=24)
     payload = {
-        "sub": "1",
+        "sub": "45",
         "username": "agent-stock",
         "type": "access",
         "exp": expire,
