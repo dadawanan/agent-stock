@@ -56,5 +56,9 @@ class Settings:
     def agent_port(self) -> int:
         return self._get("agent_port", lambda: int(os.environ.get("AGENT_PORT", "8001")))  # type: ignore[return-value]
 
+    @property
+    def jwt_secret_key(self) -> str:
+        return self._get("jwt_secret_key", lambda: os.environ.get("JWT_SECRET_KEY", "change-me-in-production"))  # type: ignore[return-value]
+
 
 settings = Settings()
