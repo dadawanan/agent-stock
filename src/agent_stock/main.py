@@ -4,6 +4,7 @@ import json
 import logging
 
 from fastapi import FastAPI, HTTPException
+from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
 from sse_starlette.sse import EventSourceResponse
 
 from agent_stock.agent import stock_agent
@@ -15,9 +16,15 @@ logger = logging.getLogger("agent-stock")
 app = FastAPI(title="Agent Stock API", version="0.1.0")
 
 
-def _build_message_history(history: list[ChatHistoryMessage]) -> list[dict[str, str]]:
+def _build_message_history(history: list[ChatHistoryMessage]) -> list[ModelRequest | ModelResponse]:
     """Convert ChatHistoryMessage list to Pydantic AI message_history format."""
-    return [{"role": msg.role, "content": msg.content} for msg in history]
+    messages = []
+    for msg in history:
+        if msg.role == "user":
+            messages.append(ModelRequest(parts=[UserPromptPart(content=msg.content)]))
+        elif msg.role == "assistant":
+            messages.append(ModelResponse(parts=[TextPart(content=msg.content)]))
+    return messages
 
 
 async def _stream_chat(request: ChatRequest):
@@ -29,7 +36,7 @@ async def _stream_chat(request: ChatRequest):
             request.message,
             message_history=message_history if message_history else None,
         ) as result:
-            async for token in result.stream_text():
+            async for token in result.stream_text(delta=True):
                 yield {
                     "event": "message",
                     "data": json.dumps({"type": "token", "content": token}, ensure_ascii=False),

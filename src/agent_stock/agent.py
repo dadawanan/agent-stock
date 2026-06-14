@@ -35,7 +35,7 @@ openai_provider = OpenAIProvider(
 )
 
 # Create model with custom provider
-openai_model = OpenAIChatModel("gpt-4o", provider=openai_provider)
+openai_model = OpenAIChatModel("mimo-v2.5-pro", provider=openai_provider)
 
 stock_agent = Agent(
     openai_model,
