@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 import logging
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
 from sse_starlette.sse import EventSourceResponse
 
 from agent_stock.agent import stock_agent
 from agent_stock.config import settings
+from agent_stock.context import auth_token
 from agent_stock.schemas import ChatRequest, ChatHistoryMessage
 
 logger = logging.getLogger("agent-stock")
@@ -27,8 +28,9 @@ def _build_message_history(history: list[ChatHistoryMessage]) -> list[ModelReque
     return messages
 
 
-async def _stream_chat(request: ChatRequest):
+async def _stream_chat(request: ChatRequest, token: str):
     """Generator that yields SSE events from the AI agent."""
+    auth_token.set(token)
     message_history = _build_message_history(request.history)
 
     try:
@@ -36,10 +38,10 @@ async def _stream_chat(request: ChatRequest):
             request.message,
             message_history=message_history if message_history else None,
         ) as result:
-            async for token in result.stream_text(delta=True):
+            async for token_text in result.stream_text(delta=True):
                 yield {
                     "event": "message",
-                    "data": json.dumps({"type": "token", "content": token}, ensure_ascii=False),
+                    "data": json.dumps({"type": "token", "content": token_text}, ensure_ascii=False),
                 }
 
             yield {
@@ -55,9 +57,12 @@ async def _stream_chat(request: ChatRequest):
 
 
 @app.post("/api/chat/stream")
-async def api_chat_stream(request: ChatRequest):
+async def api_chat_stream(request: ChatRequest, http_request: Request):
     """SSE streaming chat endpoint."""
-    return EventSourceResponse(_stream_chat(request))
+    # Extract Bearer token from Authorization header
+    auth_header = http_request.headers.get("authorization", "")
+    bearer_token = auth_header.removeprefix("Bearer ").strip() if auth_header.startswith("Bearer ") else ""
+    return EventSourceResponse(_stream_chat(request, bearer_token))
 
 
 @app.get("/api/health")

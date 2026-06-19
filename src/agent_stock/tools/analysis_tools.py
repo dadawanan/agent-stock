@@ -14,7 +14,10 @@ async def get_strategies() -> str:
     """获取所有量化策略列表。返回策略的JSON数据，包含策略ID、名称、参数等。"""
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/quant/strategies", headers=_auth_headers())
+        resp = await client.get(
+            f"{settings.stock_api_url}/api/quant/strategies",
+            headers=_auth_headers(),
+        )
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:
@@ -26,7 +29,10 @@ async def get_backtest_results() -> str:
     """获取回测结果列表。返回所有回测记录的JSON数据。"""
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/quant/backtest/results", headers=_auth_headers())
+        resp = await client.get(
+            f"{settings.stock_api_url}/api/quant/backtest/results",
+            headers=_auth_headers(),
+        )
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:

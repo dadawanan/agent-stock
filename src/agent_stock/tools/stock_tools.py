@@ -6,6 +6,7 @@ import logging
 import httpx
 
 from agent_stock.config import settings
+from agent_stock.context import auth_token
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +22,21 @@ async def get_http_client() -> httpx.AsyncClient:
 
 
 def _auth_headers() -> dict[str, str]:
-    """获取认证头"""
-    from agent_stock.tools.account_tools import _get_service_token
-    return {"Authorization": f"Bearer {_get_service_token()}"}
+    """Build Authorization header from the current request context."""
+    token = auth_token.get()
+    if token:
+        return {"Authorization": f"Bearer {token}"}
+    return {}
 
 
 async def get_popular_stocks() -> str:
     """获取今日A股热门股票排行。返回同花顺人气榜Top200的JSON数据，包含股票代码、名称、排名等。"""
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/popularity/latest", headers=_auth_headers())
+        resp = await client.get(
+            f"{settings.stock_api_url}/api/popularity/latest",
+            headers=_auth_headers(),
+        )
         resp.raise_for_status()
         data = resp.json()
         return json.dumps(data, ensure_ascii=False)
@@ -43,7 +49,10 @@ async def get_stock_list() -> str:
     """获取所有股票列表。返回数据库中所有股票代码和名称的JSON数据。"""
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/stocks", headers=_auth_headers())
+        resp = await client.get(
+            f"{settings.stock_api_url}/api/stocks",
+            headers=_auth_headers(),
+        )
         resp.raise_for_status()
         data = resp.json()
         return json.dumps(data, ensure_ascii=False)

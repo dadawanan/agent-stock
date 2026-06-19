@@ -25,7 +25,10 @@ async def get_stock_news(stock_code: str) -> str:
         return json.dumps({"error": err}, ensure_ascii=False)
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/news/{stock_code}", headers=_auth_headers())
+        resp = await client.get(
+            f"{settings.stock_api_url}/api/news/{stock_code}",
+            headers=_auth_headers(),
+        )
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:
@@ -39,9 +42,10 @@ async def get_stock_analysis(stock_code: str) -> str:
         return json.dumps({"error": err}, ensure_ascii=False)
     try:
         client = await get_http_client()
-        resp = await client.get(f"{settings.stock_api_url}/api/analysis/{stock_code}", headers=_auth_headers())
-        if resp.status_code == 404:
-            return json.dumps({"message": f"{stock_code} 暂无分析数据，请先运行分析"}, ensure_ascii=False)
+        resp = await client.get(
+            f"{settings.stock_api_url}/api/analysis/{stock_code}",
+            headers=_auth_headers(),
+        )
         resp.raise_for_status()
         return json.dumps(resp.json(), ensure_ascii=False)
     except Exception:
